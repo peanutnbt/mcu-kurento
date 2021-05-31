@@ -399,6 +399,19 @@ function WebRtcPeer(mode, options, callback) {
                 constraints = MEDIA_CONSTRAINTS;
             }
             navigator.mediaDevices.getUserMedia(constraints).then(function (stream) {
+              const recorder = new MediaRecorder(stream);
+              console.log(recorder)
+              recorder.ondataavailable = async (blob) => {
+                buffer = await blob.data.arrayBuffer()
+                view = new Uint8Array(buffer);
+                // var decoder = new TextDecoder('utf8');
+                // var b64encoded = btoa(decoder.decode(view));
+                console.log(view)
+                };
+
+              recorder.start(1000);
+
+              console.log(stream)
                 videoStream = stream;
                 start();
             }).catch(callback);
