@@ -1,8 +1,9 @@
 var ws = new WebSocket('wss://' + location.host + '/call');
-console.log(location.host)
 var video;
 var webRtcPeer;
 var state = null;
+console.log("11111111")
+
 
 const I_CAN_START = 1;
 window.onload = function() {
@@ -25,6 +26,7 @@ ws.onmessage = function(message) {
         dispose();
 		break;
 	case 'iceCandidate':
+		// console.log(parsedMessage.candidate)
 		webRtcPeer.addIceCandidate(parsedMessage.candidate)
 		break;
 	default:
@@ -38,14 +40,18 @@ function response(message) {
 		// console.info('Call not accepted for the following reason: ' + errorMsg);
         dispose();
 	} else {
+		start();
 //        webRtcPeer.processSdpAnswer(message.sdpAnswer);
 			setState(I_CAN_START);
+			console.log(message.sdpAnswer)
 	webRtcPeer.processAnswer(message.sdpAnswer);
 	}
 }
 
 function start() {
 	if (!webRtcPeer) {
+		console.log(123);
+
 		showSpinner(video);
 
 		//        webRtcPeer = kurentoUtils.WebRtcPeer.startSendRecv(undefined, video, function(offerSdp) {
@@ -72,15 +78,18 @@ function start() {
 	}
 }
 
+
 function setState(nextState) {
 	state = nextState;
 }
 function onIceCandidate(candidate) {
 	//    console.log('Local candidate' + JSON.stringify(candidate));
 	 //  if (state == I_CAN_START){
+		//  console.log("candidate: ",candidate)
 	   var message = {
 	      id : 'onIceCandidate',
-	      candidate : candidate
+	      candidate : candidate,
+		//   check : 'check'
 	   };
 	   sendMessage(message);
 //	}
