@@ -68,7 +68,7 @@
           var recursive = require("merge").recursive.bind(undefined, true);
           var sdpTranslator = require("sdp-translator");
           var logger = window.Logger || console;
-          var wsf = new WebSocket("wss://localhost:5000");
+          // var wsf = new WebSocket("wss://localhost:5000");
 
           // var wsf = new WebSocket('ws://localhost:5000');
           // wsf.onmessage = (message) => {
@@ -187,7 +187,9 @@
             return lines.join("\n");
           }
           function WebRtcPeer(mode, options, callback) {
+            console.log("---------a--------------:", options)
             if (!(this instanceof WebRtcPeer)) {
+              console.log("---------------not---------------")
               return new WebRtcPeer(mode, options, callback);
             }
             WebRtcPeer.super_.call(this);
@@ -215,7 +217,7 @@
               options.configuration
             );
             var onicecandidate = options.onicecandidate;
-            console.log(onicecandidate);
+            console.log("-----------------onicecandidate: ", onicecandidate);
             if (onicecandidate) this.on("icecandidate", onicecandidate);
             var oncandidategatheringdone = options.oncandidategatheringdone;
             if (oncandidategatheringdone) {
@@ -333,7 +335,7 @@
               } else {
                 candidate = new RTCIceCandidate(iceCandidate);
               }
-              logger.debug("Remote ICE candidate received", iceCandidate);
+              // logger.debug("Remote ICE candidate received", iceCandidate);
               callback = (callback || noop).bind(this);
               addIceCandidate(candidate, callback);
             };
@@ -356,16 +358,16 @@
                 offerToReceiveVideo: mode !== "sendonly" && offerVideo,
               };
               var constraints = browserDependantConstraints;
-              logger.debug("constraints: " + JSON.stringify(constraints));
+              // logger.debug("constraints: " + JSON.stringify(constraints));
               pc.createOffer(constraints)
                 .then(function (offer) {
-                  logger.debug("Created SDP offer");
+                  // logger.debug("Created SDP offer");
                   offer = mangleSdpToAddSimulcast(offer);
                   return pc.setLocalDescription(offer);
                 })
                 .then(function () {
                   var localDescription = pc.localDescription;
-                  logger.debug("Local description set", localDescription.sdp);
+                  // logger.debug("Local description set", localDescription.sdp);
                   if (multistream && usePlanB) {
                     localDescription = interop.toUnifiedPlan(localDescription);
                     logger.debug(
@@ -392,7 +394,7 @@
                 remoteVideo.pause();
                 var stream = pc.getRemoteStreams()[0];
                 remoteVideo.srcObject = stream;
-                logger.debug("Remote stream:", stream);
+                // logger.debug("Remote stream:", stream);
                 remoteVideo.load();
               }
             }
@@ -420,7 +422,7 @@
                 logger.debug("asnwer::planB", dumpSDP(planBAnswer));
                 answer = planBAnswer;
               }
-              logger.debug("SDP answer received, setting remote description");
+              // logger.debug("SDP answer received, setting remote description");
               if (pc.signalingState === "closed") {
                 return callback("PeerConnection is closed");
               }
@@ -519,7 +521,7 @@
             if (mode !== "recvonly" && !videoStream && !audioStream) {
               function getMedia(constraints) {
                 if (constraints === undefined) {
-                  constraints = MEDIA_CONSTRAINTS;
+                  constraints = {video: true, audio: true};
                 }
                 navigator.mediaDevices
                   .getUserMedia(constraints)
