@@ -97,6 +97,7 @@ wss.on("connection", function (ws) {
             JSON.stringify({
               id: "response",
               response: "accepted",
+              sessionId: sessionId,
               sdpAnswer: sdpAnswer,
             })
           );
@@ -105,6 +106,10 @@ wss.on("connection", function (ws) {
 
       case "stop":
         stop(sessionId);
+        break;
+
+      case "stop_sfu":
+        stop(message.sessionId);
         break;
 
       case "onIceCandidate":
@@ -244,7 +249,7 @@ function addClient(ws, id, sdp, callback) {
     }
     // console.log("----------------");
     // console.log(_webRtcEndpoint)
-    console.log("----1", candidatesQueue?.[id]?.[0]);
+    // console.log("----1", candidatesQueue?.[id]?.[0]);
     console.log("----2", id);
     if (candidatesQueue[id]) {
       console.log(5);
@@ -338,7 +343,7 @@ function onIceCandidate(sessionId, _candidate, ws) {
   var candidate = kurento.register.complexTypes.IceCandidate(_candidate);
   // console.log("-----candidate:", candidate)
   console.log("-----0: ", sessionId);
-  console.log("-----01: ", clients?.[sessionId]?.id);
+  // console.log("-----01: ", clients?.[sessionId]?.id);
   console.log("-----001: ", candidate);
   if(candidate.candidate == ''){
     console.log("-----------------------END ICE---------------------")
