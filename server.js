@@ -97,6 +97,7 @@ wss.on("connection", function (ws) {
             JSON.stringify({
               id: "response",
               response: "accepted",
+              sessionId: sessionId,
               sdpAnswer: sdpAnswer,
             })
           );
@@ -105,6 +106,11 @@ wss.on("connection", function (ws) {
 
       case "stop":
         stop(sessionId);
+        break;
+
+      case "stop_sfu":
+        console.log("sessionId: ",message.sessionId)
+        stop(message.sessionId);
         break;
 
       case "onIceCandidate":
@@ -152,9 +158,9 @@ function getKurentoClient(callback) {
       // console.log("Coult not find media server at address " + ws_uri);
       return callback(
         "Could not find media server at address" +
-          ws_uri +
-          ". Exiting with error " +
-          error
+        ws_uri +
+        ". Exiting with error " +
+        error
       );
     }
     kurentoClient = _kurentoClient;
@@ -340,13 +346,13 @@ function onIceCandidate(sessionId, _candidate, ws) {
   console.log("-----0: ", sessionId);
   console.log("-----01: ", clients?.[sessionId]?.id);
   console.log("-----001: ", candidate);
-  if(candidate.candidate == ''){
+  if (candidate.candidate == '') {
     console.log("-----------------------END ICE---------------------")
     ws.send(
-        JSON.stringify({
-          id: "endCandidate",
-        })
-      );
+      JSON.stringify({
+        id: "endCandidate",
+      })
+    );
   }
   if (clients[sessionId]) {
     // console.info('Sending candidate');
