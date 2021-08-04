@@ -5,15 +5,15 @@ var path = require("path");
 var wsm = require("ws");
 var https = require("https");
 var fs = require("fs");
-app.set("port", process.env.PORT || 8080);
+app.set("port", process.env.PORT || 8081);
 
 /*
  * Definition of constants
  */
 
 // Modify here the kurento media server address
-const ws_uri = "ws://localhost:8888/kurento";
-//const ws_uri = "ws://192.168.15.45:8888/kurento";
+const ws_uri = "ws://localhost:8889/kurento";
+//const ws_uri = "ws://192.168.15.45:8889/kurento";
 
 /*
  * Definition of global variables.
@@ -47,7 +47,7 @@ var port = app.get("port");
 //     console.log('Mixing stream server started');
 // });
 
-var server = https.createServer(options, app).listen(8080);
+var server = https.createServer(options, app).listen(8081);
 
 var WebSocketServer = wsm.Server;
 var wss = new WebSocketServer({
