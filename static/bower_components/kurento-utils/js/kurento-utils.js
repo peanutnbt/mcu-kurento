@@ -426,7 +426,8 @@
               if (pc.signalingState === "closed") {
                 return callback("PeerConnection is closed");
               }
-              
+              console.log("---KURENTO setRemoteDescription---answer----: ", answer)
+
               pc.setRemoteDescription(
                 answer,
                 function () {
@@ -451,6 +452,9 @@
               if (pc.signalingState === "closed") {
                 return callback("PeerConnection is closed");
               }
+
+              console.log("---KURENTO setRemoteDescription---offer----: ", offer)
+
               pc.setRemoteDescription(offer)
                 .then(function () {
                   return setRemoteVideo();
