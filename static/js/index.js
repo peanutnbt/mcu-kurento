@@ -2,7 +2,11 @@ var ws = new WebSocket("wss://" + location.host + "/call");
 var video;
 var webRtcPeer;
 var state = null;
+<<<<<<< HEAD
  console.log("11111111", ws);
+=======
+console.log("11111111:", "wss://" + location.host + "/call");
+>>>>>>> cf946a7b8029ddf17015928316b7aa867669031f
 
 const I_CAN_START = 1;
 window.onload = function () {

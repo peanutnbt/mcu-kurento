@@ -65,12 +65,12 @@ wss.on("connection", function (ws) {
   // console.log("Connection received with sessionId " + sessionId);
 
   ws.on("error", function (error) {
-    // console.log('Connection ' + sessionId + ' error');
+    console.log('---------------Connection ' + sessionId + ' error');
     stop(sessionId);
   });
 
   ws.on("close", function () {
-    // console.log('Connection ' + sessionId + ' closed');
+    console.log('---------------Connection ' + sessionId + ' closed');
     stop(sessionId);
   });
 
