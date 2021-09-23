@@ -12,8 +12,9 @@ app.set("port", process.env.PORT || 8081);
  */
 
 // Modify here the kurento media server address
+// const ws_uri = "ws://117.5.229.85:10000/kurento";
+// const ws_uri = "ws://192.168.15.45:8889/kurento";
 const ws_uri = "ws://localhost:8889/kurento";
-//const ws_uri = "ws://192.168.15.45:8889/kurento";
 
 /*
  * Definition of global variables.
@@ -61,7 +62,7 @@ var wss = new WebSocketServer({
 wss.on("connection", function (ws) {
   var sessionId = nextUniqueId();
 
-  console.log("Connection received with sessionId " + sessionId);
+  // console.log("Connection received with sessionId " + sessionId);
 
   ws.on("error", function (error) {
     // console.log('Connection ' + sessionId + ' error');
@@ -108,14 +109,19 @@ wss.on("connection", function (ws) {
         stop(sessionId);
         break;
 
+      case "stop_by_jitsi":
+        // console.log("stop_by_jitsi: ", message)
+        stop(message.sessionId);
+        break;
+
       case "stop_sfu":
-        console.log("sessionId: ",message.sessionId)
+        // console.log("sessionId: ",message.sessionId)
         stop(message.sessionId);
         break;
 
       case "onIceCandidate":
         // console.log("-------------------------------",message.candidate)
-        console.log("00000000000000000000onIceCandidate000000000000000000000");
+        // console.log("00000000000000000000onIceCandidate000000000000000000000");
         if (message.candidate) {
           var test = {
             candidate: message.candidate.candidate,
@@ -123,7 +129,7 @@ wss.on("connection", function (ws) {
             sdpMLineIndex: message.candidate.sdpMLineIndex,
             usernameFragment: message.candidate.usernameFragment,
           };
-          console.log("---------------------test: ", sessionId);
+          // console.log("---------------------test: ", sessionId);
           onIceCandidate(sessionId, test, ws);
         }
         break;
@@ -250,10 +256,10 @@ function addClient(ws, id, sdp, callback) {
     }
     // console.log("----------------");
     // console.log(_webRtcEndpoint)
-    console.log("----1", candidatesQueue?.[id]?.[0]);
-    console.log("----2", id);
+    // console.log("----1", candidatesQueue?.[id]?.[0]);
+    // console.log("----2", id);
     if (candidatesQueue[id]) {
-      console.log(5);
+      // console.log(5);
       while (candidatesQueue[id].length) {
         var candidate = candidatesQueue[id].shift();
         //  console.log("shift: ", candidate);
@@ -267,12 +273,12 @@ function addClient(ws, id, sdp, callback) {
     }
     clients[id].webRtcEndpoint = _webRtcEndpoint;
     clients[id].webRtcEndpoint.on("OnIceCandidate", function (event) {
-      console.log(4);
+      // console.log(4);
       // console.log(event.candidate)
       var candidate = kurento.register.complexTypes.IceCandidate(
         event.candidate
       );
-      console.log("--------------------------aaaa: ", candidate)
+      // console.log("--------------------------aaaa: ", candidate)
       ws.send(
         JSON.stringify({
           id: "iceCandidate",
@@ -282,7 +288,7 @@ function addClient(ws, id, sdp, callback) {
     });
 
     clients[id].webRtcEndpoint.processOffer(sdp, function (error, sdpAnswer) {
-      console.log(2);
+      // console.log(2);
       if (error) {
         stop(id);
         // console.log("Error processing offer " + error);
@@ -292,7 +298,7 @@ function addClient(ws, id, sdp, callback) {
     });
 
     clients[id].webRtcEndpoint.gatherCandidates(function (error) {
-      console.log(3);
+      // console.log(3);
       if (error) {
         return callback(error);
       }
@@ -300,7 +306,7 @@ function addClient(ws, id, sdp, callback) {
     // console.log(clients[id])
 
     createHubPort(function (error, _hubPort) {
-      console.log(1);
+      // console.log(1);
 
       // console.log("clientid hubport: ", clients[id]);
 
@@ -343,11 +349,11 @@ function stop(id) {
 function onIceCandidate(sessionId, _candidate, ws) {
   var candidate = kurento.register.complexTypes.IceCandidate(_candidate);
   // console.log("-----candidate:", candidate)
-  console.log("-----0: ", sessionId);
-  console.log("-----01: ", clients?.[sessionId]?.id);
-  console.log("-----001: ", candidate);
+  // console.log("-----0: ", sessionId);
+  // console.log("-----01: ", clients?.[sessionId]?.id);
+  // console.log("-----001: ", candidate);
   if (candidate.candidate == '') {
-    console.log("-----------------------END ICE---------------------")
+    // console.log("-----------------------END ICE---------------------")
     ws.send(
       JSON.stringify({
         id: "endCandidate",
@@ -356,12 +362,12 @@ function onIceCandidate(sessionId, _candidate, ws) {
   }
   if (clients[sessionId]) {
     // console.info('Sending candidate');
-    console.log("---in clients");
+    // console.log("---in clients");
     var webRtcEndpoint = clients[sessionId].webRtcEndpoint;
     webRtcEndpoint.addIceCandidate(candidate);
   } else {
     // console.info('Queueing candidate');
-    console.log("---in candidatesQueue");
+    // console.log("---in candidatesQueue");
 
     if (!candidatesQueue[sessionId]) {
       candidatesQueue[sessionId] = [];

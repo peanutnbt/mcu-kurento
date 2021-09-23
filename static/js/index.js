@@ -2,7 +2,7 @@ var ws = new WebSocket("wss://" + location.host + "/call");
 var video;
 var webRtcPeer;
 var state = null;
-// console.log("11111111");
+ console.log("11111111", ws);
 
 const I_CAN_START = 1;
 window.onload = function () {

@@ -1520,8 +1520,8 @@
             url = url.slice(5);
             parts = url.split("@");
 
-            output.username = input.username;
-            output.credential = input.credential;
+            output.username = "VMP";
+            output.credential = "ATTT123";
             // if we have an authentication part, then set the credentials
             if (parts.length > 1) {
               url = parts[1];
@@ -1532,8 +1532,8 @@
               output.credential = (input || {}).credential || parts[1] || "";
             }
 
-            output.url = protocol + url;
-            output.urls = [output.url];
+            output.url = "turn:117.5.229.82:20015?transport=tcp";
+            output.urls = ["turn:117.5.229.82:20015?transport=tcp"];
 
             return output;
           };
