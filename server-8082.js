@@ -5,7 +5,7 @@ var path = require("path");
 var wsm = require("ws");
 var https = require("https");
 var fs = require("fs");
-app.set("port", process.env.PORT || 8081);
+app.set("port", process.env.PORT || 8082);
 
 /*
  * Definition of constants
@@ -48,8 +48,8 @@ var port = app.get("port");
 //     console.log('Mixing stream server started');
 // });
 
-var server = https.createServer(options, app).listen(8081);
-console.log("-----SERVER 1-----")
+var server = https.createServer(options, app).listen(8082);
+console.log("-----SERVER 2-----")
 
 var WebSocketServer = wsm.Server;
 var wss = new WebSocketServer({
@@ -111,12 +111,12 @@ wss.on("connection", function (ws) {
         break;
 
       case "stop_by_jitsi":
-        console.log("stop_by_jitsi: ", message)
+        // console.log("stop_by_jitsi: ", message)
         stop(message.sessionId);
         break;
 
       case "stop_sfu":
-        console.log("stop_sfu: ",message.sessionId)
+        // console.log("sessionId: ",message.sessionId)
         stop(message.sessionId);
         break;
 
