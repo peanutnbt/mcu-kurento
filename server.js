@@ -20,13 +20,13 @@ const ws_uri = "ws://localhost:8889/kurento";
  * Definition of global variables.
  */
 
-var composite = null;
-var mediaPipeline = null;
+var composite = new Map();
+var mediaPipeline = new Map();
 
 var idCounter = 0;
 var clients = {};
 var candidatesQueue = {};
-var kurentoClient = null;
+var kurentoClient = new Map();
 
 function nextUniqueId() {
   idCounter++;
@@ -62,17 +62,18 @@ var wss = new WebSocketServer({
  */
 wss.on("connection", function (ws) {
   var sessionId = nextUniqueId();
-
+  var current_room 
   console.log("Connection received with sessionId " + sessionId);
 
   ws.on("error", function (error) {
     console.log('---------------Connection ' + sessionId + ' error');
-    stop(sessionId);
+    if(current_room)
+      stop(current_room, sessionId);
   });
 
   ws.on("close", function () {
     console.log('---------------Connection ' + sessionId + ' closed');
-    stop(sessionId);
+    stop(current_room, sessionId);
   });
 
   ws.on("message", function (_message) {
@@ -83,7 +84,8 @@ wss.on("connection", function (ws) {
     switch (message.id) {
       case "client":
         // console.log(message.sdpOffer)
-        addClient(ws, sessionId, message.sdpOffer, function (error, sdpAnswer) {
+        current_room = message.room
+        addClient(ws, sessionId, message.sdpOffer, message.room, function (error, sdpAnswer) {
           if (error) {
             console.log(error);
             return ws.send(
@@ -107,17 +109,17 @@ wss.on("connection", function (ws) {
         break;
 
       case "stop":
-        stop(sessionId);
+        stop(current_room, sessionId);
         break;
 
       case "stop_by_jitsi":
         console.log("stop_by_jitsi: ", message)
-        stop(message.sessionId);
+        stop(current_room, message.sessionId);
         break;
 
       case "stop_sfu":
         console.log("stop_sfu: ",message.sessionId)
-        stop(message.sessionId);
+        stop(current_room, message.sessionId);
         break;
 
       case "onIceCandidate":
@@ -152,10 +154,14 @@ wss.on("connection", function (ws) {
  */
 
 // Retrieve or create kurentoClient
-function getKurentoClient(callback) {
+function getKurentoClient(room, callback) {
+  // console.log("getKurentoClient: ")
+
   // console.log("getKurentoClient");
-  if (kurentoClient !== null) {
+  if (kurentoClient.get(room)) {
     // console.log("KurentoClient already created");
+    // console.log("kurentoClient1: ",kurentoClient)
+    // console.log("room1: ",room)
     return callback(null, kurentoClient);
   }
 
@@ -170,59 +176,71 @@ function getKurentoClient(callback) {
         error
       );
     }
-    kurentoClient = _kurentoClient;
+    // console.log("kurentoClient: ",kurentoClient.get(room))
+    // console.log("_kurentoClient: ",_kurentoClient)
+    // console.log("room: ",room)
+    kurentoClient.set(room, _kurentoClient)
     callback(null, kurentoClient);
   });
 }
 
 // Retrieve or create mediaPipeline
-function getMediaPipeline(callback) {
-  if (mediaPipeline !== null) {
-    // console.log("MediaPipeline already created");
+function getMediaPipeline(room, callback) {
+  // console.log("getMediaPipeline: ")
+
+  if (mediaPipeline.get(room)) {
+    // console.log("MediaPipeline already created: ");
     return callback(null, mediaPipeline);
   }
-  getKurentoClient(function (error, _kurentoClient) {
+  getKurentoClient(room, function (error, _kurentoClient) {
     if (error) {
       return callback(error);
     }
-    _kurentoClient.create("MediaPipeline", function (error, _pipeline) {
+    _kurentoClient.get(room).create("MediaPipeline", function (error, _pipeline) {
       if (error) {
         return callback(error);
       }
-      mediaPipeline = _pipeline;
+      // mediaPipeline = _pipeline;
+      mediaPipeline.set(room, _pipeline)
+      // console.log("mediaPipelinemediaPipelinemediaPipelinemediaPipeline: ", mediaPipeline)
       callback(null, mediaPipeline);
     });
   });
 }
 
 // Retrieve or create composite hub
-function getComposite(callback) {
-  if (composite !== null) {
+function getComposite(room, callback) {
+  // console.log("getComposite: ")
+  if (composite.get(room)) {
     // console.log("Composer already created");
     return callback(null, composite, mediaPipeline);
   }
-  getMediaPipeline(function (error, _pipeline) {
+  getMediaPipeline(room, function (error, _pipeline) {
     if (error) {
       return callback(error);
     }
-    _pipeline.create("Composite", function (error, _composite) {
+    // console.log("mediaPipelinemediaPipelinemediaPipelinemediaPipeline`1111111111111: ", _pipeline)
+    
+    _pipeline.get(room).create("Composite", function (error, _composite) {
       // console.log("creating Composite");
       if (error) {
         return callback(error);
       }
-      composite = _composite;
+      // composite = _composite;
+      composite.set(room, _composite)
       callback(null, composite);
     });
   });
-}
+} 
 
 // Create a hub port
-function createHubPort(callback) {
-  getComposite(function (error, _composite) {
+function createHubPort(room, callback) {
+  // console.log("createHubPort")
+  getComposite(room, function (error, _composite) {
     if (error) {
       return callback(error);
     }
-    _composite.createHubPort(function (error, _hubPort) {
+    _composite.get(room).createHubPort(function (error, _hubPort) {
       // console.info("Creating hubPort");
       if (error) {
         return callback(error);
@@ -233,12 +251,12 @@ function createHubPort(callback) {
 }
 
 // Create a webRTC end point
-function createWebRtcEndPoint(callback) {
-  getMediaPipeline(function (error, _pipeline) {
+function createWebRtcEndPoint(room, callback) {
+  getMediaPipeline(room, function (error, _pipeline) {
     if (error) {
       return callback(error);
     }
-    _pipeline.create("WebRtcEndpoint", function (error, _webRtcEndpoint) {
+    _pipeline.get(room).create("WebRtcEndpoint", function (error, _webRtcEndpoint) {
       // console.info("Creating createWebRtcEndpoint");
       if (error) {
         return callback(error);
@@ -249,8 +267,9 @@ function createWebRtcEndPoint(callback) {
 }
 
 // Add a webRTC client
-function addClient(ws, id, sdp, callback) {
-  createWebRtcEndPoint(function (error, _webRtcEndpoint) {
+function addClient(ws, id, sdp, room, callback) {
+  createWebRtcEndPoint(room, function (error, _webRtcEndpoint) {
+    // console.log("createWebRtcEndPoint - room: ", room)
     if (error) {
       // console.log("Error creating WebRtcEndPoint " + error);
       return callback(error);
@@ -291,7 +310,7 @@ function addClient(ws, id, sdp, callback) {
     clients[id].webRtcEndpoint.processOffer(sdp, function (error, sdpAnswer) {
       // console.log(2);
       if (error) {
-        stop(id);
+        stop(room, id);
         // console.log("Error processing offer " + error);
         return callback(error);
       }
@@ -306,13 +325,13 @@ function addClient(ws, id, sdp, callback) {
     });
     // console.log(clients[id])
 
-    createHubPort(function (error, _hubPort) {
+    createHubPort(room, function (error, _hubPort) {
       // console.log(1);
 
       // console.log("clientid hubport: ", clients[id]);
 
       if (error) {
-        stop(id);
+        stop(room, id);
 
         return callback(error);
       }
@@ -324,7 +343,8 @@ function addClient(ws, id, sdp, callback) {
 }
 
 // Stop and remove a webRTC client
-function stop(id) {
+function stop(room, id) {
+  console.log("STOP clients[id]: ", id)
   if (clients[id]) {
     if (clients[id].webRtcEndpoint) {
       clients[id].webRtcEndpoint.release();
@@ -334,14 +354,16 @@ function stop(id) {
     }
     delete clients[id];
   }
+  console.log("STOP Object.getOwnPropertyNames(clients).length == 0: ", Object.getOwnPropertyNames(clients).length == 0)
+
   if (Object.getOwnPropertyNames(clients).length == 0) {
-    if (composite) {
-      composite.release();
-      composite = null;
+    if (composite.get(room)) {
+      composite.get(room).release();
+      composite.set(room, null);
     }
-    if (mediaPipeline) {
-      mediaPipeline.release();
-      mediaPipeline = null;
+    if (mediaPipeline.get(room)) {
+      mediaPipeline.get(room).release();
+      mediaPipeline.set(room, null);
     }
   }
   delete candidatesQueue[id];

@@ -103,19 +103,31 @@ function onOffer(error, offerSdp) {
   var message = {
     id: "client",
     sdpOffer: offerSdp,
+    room: Math.floor(Math.random() * 2)
   };
   setTimeout(() => {
-  	sendMessage(message);
+    sendMessage(message);
   }, 2000);
 }
 function onError(error) {
   // console.error(error);
 }
 function stop() {
-  var message = {
-    id: "stop",
-  };
-  sendMessage(message);
+  // console.log("webRtcPeer: ", webRtcPeer);
+  // var sender = webRtcPeer.peerConnection.getSenders();
+  // console.log("found sender:", sender, sender.length);
+  // if (sender[0] && sender[0].track.kind == "video") {
+  //   sender[0].replaceTrack(null);
+  //   // webRtcPeer.peerConnection.removeTrack(sender[0]);
+  // } else {
+  //   sender[1].replaceTrack(null);
+  //   // webRtcPeer.peerConnection.removeTrack(sender[1]);
+  // }
+
+  // var message = {
+  //   id: "stop",
+  // };
+  // sendMessage(message);
   dispose();
 }
 
@@ -129,7 +141,7 @@ function dispose() {
 
 function sendMessage(message) {
   var jsonMessage = JSON.stringify(message);
-//   console.log('Senging message: ' + jsonMessage);
+  //   console.log('Senging message: ' + jsonMessage);
   ws.send(jsonMessage);
 }
 

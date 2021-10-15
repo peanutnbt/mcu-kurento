@@ -639,6 +639,8 @@
               return this.peerConnection.getLocalStreams()[index || 0];
             }
           };
+          WebRtcPeer.peerConnection = this.peerConnection;
+
           WebRtcPeer.prototype.getRemoteStream = function (index) {
             if (this.peerConnection) {
               return this.peerConnection.getRemoteStreams()[index || 0];
@@ -655,13 +657,13 @@
               }
               if (pc) {
                 if (pc.signalingState === "closed") return;
-                pc.getLocalStreams().forEach(streamStop);
+                // pc.getLocalStreams().forEach(streamStop);
                 pc.close();
               }
             } catch (err) {
               logger.warn("Exception disposing webrtc peer " + err);
             }
-            this.emit("_dispose");
+            // this.emit("_dispose");
           };
           function WebRtcPeerRecvonly(options, callback) {
             if (!(this instanceof WebRtcPeerRecvonly)) {
